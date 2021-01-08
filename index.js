@@ -17,7 +17,7 @@ module.exports = function (options = {}) {
         return false;
       }
 
-      if (marker !== 0x3d /* = */) {
+      if (marker !== 0x2b /* + */) {
         return false;
       }
 
@@ -73,7 +73,7 @@ module.exports = function (options = {}) {
       for (i = 0; i < max; i++) {
         startDelim = delimiters[i];
 
-        if (startDelim.marker !== 0x3d /* = */) {
+        if (startDelim.marker !== 0x2b /* + */) {
           continue;
         }
 
@@ -84,20 +84,20 @@ module.exports = function (options = {}) {
         endDelim = delimiters[startDelim.end];
 
         token = state.tokens[startDelim.token];
-        token.type = 'mark_open';
-        token.tag = 'mark';
+        token.type = 'ins_open';
+        token.tag = 'ins';
         token.nesting = 1;
-        token.markup = '==';
+        token.markup = '++';
         token.content = '';
 
         token = state.tokens[endDelim.token];
-        token.type = 'mark_close';
-        token.tag = 'mark';
+        token.type = 'ins_close';
+        token.tag = 'ins';
         token.nesting = -1;
-        token.markup = '==';
+        token.markup = '++';
         token.content = '';
 
-        if (state.tokens[endDelim.token - 1].type === 'text' && state.tokens[endDelim.token - 1].content === '=') {
+        if (state.tokens[endDelim.token - 1].type === 'text' && state.tokens[endDelim.token - 1].content === '+') {
           loneMarkers.push(endDelim.token - 1);
         }
       }
@@ -112,7 +112,7 @@ module.exports = function (options = {}) {
         i = loneMarkers.pop();
         j = i + 1;
 
-        while (j < state.tokens.length && state.tokens[j].type === 'mark_close') {
+        while (j < state.tokens.length && state.tokens[j].type === 'ins_close') {
           j++;
         }
 
@@ -126,8 +126,8 @@ module.exports = function (options = {}) {
       }
     }
 
-    md.inline.ruler.before('emphasis', 'mark', tokenize);
-    md.inline.ruler2.before('emphasis', 'mark', function (state) {
+    md.inline.ruler.before('emphasis', 'ins', tokenize);
+    md.inline.ruler2.before('emphasis', 'ins', function (state) {
       var curr,
         tokens_meta = state.tokens_meta,
         max = (state.tokens_meta || []).length;
