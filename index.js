@@ -1,5 +1,7 @@
 'use strict';
 
+// https://github.com/markdown-it/markdown-it-ins/blob/master/index.js
+
 module.exports = function (options = {}) {
   var marker_symbol = (options.marker || "$")[0];
   var marker_code_string = "0x" + marker_symbol.codePointAt(0).toString(16);
