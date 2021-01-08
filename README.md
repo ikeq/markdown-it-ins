@@ -26,7 +26,7 @@ bower install markdown-it-ins --save
 
 ```js
 var md = require('markdown-it')()
-            .use(require('markdown-it-ins'));
+            .use(require('markdown-it-ins')({ marker: '+', tag: 'ins' }));
 
 md.render('++inserted++') // => '<p><ins>inserted</ins></p>'
 ```

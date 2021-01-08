@@ -1,6 +1,11 @@
 'use strict';
 
 module.exports = function (options = {}) {
+  var marker_symbol = (options.marker || "$")[0];
+  var marker_code_string = "0x" + marker_symbol.codePointAt(0).toString(16);
+  var marker_code = Number(marker_code_string);
+  var tag_name = options.tag || "tag-" + marker_code_string;
+
   return function plugin(md) {
     // Insert each marker as a separate text token, and add it to delimiter list
     //
@@ -17,7 +22,7 @@ module.exports = function (options = {}) {
         return false;
       }
 
-      if (marker !== 0x2b /* + */) {
+      if (marker !== marker_code) {
         return false;
       }
 
@@ -73,7 +78,7 @@ module.exports = function (options = {}) {
       for (i = 0; i < max; i++) {
         startDelim = delimiters[i];
 
-        if (startDelim.marker !== 0x2b /* + */) {
+        if (startDelim.marker !== marker_code /* + */) {
           continue;
         }
 
@@ -84,20 +89,20 @@ module.exports = function (options = {}) {
         endDelim = delimiters[startDelim.end];
 
         token = state.tokens[startDelim.token];
-        token.type = 'ins_open';
-        token.tag = 'ins';
+        token.type = tag_name + '_open';
+        token.tag = tag_name;
         token.nesting = 1;
-        token.markup = '++';
+        token.markup = marker_symbol.repeat(2);
         token.content = '';
 
         token = state.tokens[endDelim.token];
-        token.type = 'ins_close';
-        token.tag = 'ins';
+        token.type = tag_name + '_close';
+        token.tag = tag_name;
         token.nesting = -1;
-        token.markup = '++';
+        token.markup = marker_symbol.repeat(2);
         token.content = '';
 
-        if (state.tokens[endDelim.token - 1].type === 'text' && state.tokens[endDelim.token - 1].content === '+') {
+        if (state.tokens[endDelim.token - 1].type === 'text' && state.tokens[endDelim.token - 1].content === marker_symbol) {
           loneMarkers.push(endDelim.token - 1);
         }
       }
@@ -112,7 +117,7 @@ module.exports = function (options = {}) {
         i = loneMarkers.pop();
         j = i + 1;
 
-        while (j < state.tokens.length && state.tokens[j].type === 'ins_close') {
+        while (j < state.tokens.length && state.tokens[j].type === tag_name + '_close') {
           j++;
         }
 
@@ -126,8 +131,8 @@ module.exports = function (options = {}) {
       }
     }
 
-    md.inline.ruler.before('emphasis', 'ins', tokenize);
-    md.inline.ruler2.before('emphasis', 'ins', function (state) {
+    md.inline.ruler.before('emphasis', tag_name, tokenize);
+    md.inline.ruler2.before('emphasis', tag_name, function (state) {
       var curr,
         tokens_meta = state.tokens_meta,
         max = (state.tokens_meta || []).length;
